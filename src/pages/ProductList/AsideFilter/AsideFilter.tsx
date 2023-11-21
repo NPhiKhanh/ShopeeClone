@@ -175,7 +175,7 @@ function AsideFilter({ queryConfig, categories }: Props) {
           <Link to='' className='flex items-center text-sm'>
             {Array(5)
               .fill(0)
-              .map((item, index) => (
+              .map((_, index) => (
                 <svg viewBox='0 0 9.5 8' key={index} className='w-4 h-4 mx-[2px]'>
                   <defs>
                     <linearGradient id='ratingStarGradient' x1='50%' x2='50%' y1='0%' y2='100%'>
@@ -209,7 +209,7 @@ function AsideFilter({ queryConfig, categories }: Props) {
           <Link to='' className='flex items-center text-sm'>
             {Array(5)
               .fill(0)
-              .map((item, index) => (
+              .map((_, index) => (
                 <svg viewBox='0 0 9.5 8' key={index} className='w-4 h-4 mx-[2px]'>
                   <defs>
                     <linearGradient id='ratingStarGradient' x1='50%' x2='50%' y1='0%' y2='100%'>
