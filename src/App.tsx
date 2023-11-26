@@ -9,6 +9,7 @@ import MainLayout from './layouts/MainLayout/MainLayout'
 import Profile from './pages/Profile'
 import { useSelector } from 'react-redux'
 import { RootState } from './redux/store'
+import ProductDetail from './pages/ProductDetail'
 
 function App() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
@@ -52,6 +53,14 @@ function App() {
           element={
             <MainLayout>
               <ProductList />
+            </MainLayout>
+          }
+        />
+        <Route
+          path=':id'
+          element={
+            <MainLayout>
+              <ProductDetail />
             </MainLayout>
           }
         />

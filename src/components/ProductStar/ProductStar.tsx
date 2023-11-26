@@ -1,4 +1,14 @@
-function ProductStar({ star }: { star: number }) {
+interface Props {
+  star: number
+  activeStar?: string
+  nonActiveStar?: string
+}
+
+function ProductStar({
+  star,
+  activeStar = 'w-3 h-3 fill-yellow-300 text-yellow-300',
+  nonActiveStar = 'w-3 h-3 fill-current text-gray-300'
+}: Props) {
   const starHandler = (order: number) => {
     if (order <= star) {
       return '100%'
@@ -15,13 +25,7 @@ function ProductStar({ star }: { star: number }) {
         .map((_, index) => (
           <div className='relative' key={index}>
             <div className='absolute top-0 left-0 h-full overflow-hidden' style={{ width: starHandler(index + 1) }}>
-              <svg
-                enableBackground='new 0 0 15 15'
-                viewBox='0 0 15 15'
-                x='0'
-                y='0'
-                className='w-3 h-3 fill-yellow-300 text-yellow-300'
-              >
+              <svg enableBackground='new 0 0 15 15' viewBox='0 0 15 15' x='0' y='0' className={activeStar}>
                 <polygon
                   points='7.5 .8 9.7 5.4 14.5 5.9 10.7 9.1 11.8 14.2 7.5 11.6 3.2 14.2 4.3 9.1 .5 5.9 5.3 5.4'
                   strokeLinecap='round'
@@ -30,13 +34,7 @@ function ProductStar({ star }: { star: number }) {
                 ></polygon>
               </svg>
             </div>
-            <svg
-              enableBackground='new 0 0 15 15'
-              viewBox='0 0 15 15'
-              x='0'
-              y='0'
-              className='w-3 h-3 fill-current text-gray-300'
-            >
+            <svg enableBackground='new 0 0 15 15' viewBox='0 0 15 15' x='0' y='0' className={nonActiveStar}>
               <polygon
                 points='7.5 .8 9.7 5.4 14.5 5.9 10.7 9.1 11.8 14.2 7.5 11.6 3.2 14.2 4.3 9.1 .5 5.9 5.3 5.4'
                 strokeLinecap='round'

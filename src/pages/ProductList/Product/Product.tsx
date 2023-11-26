@@ -8,7 +8,7 @@ interface List {
 
 function Product({ productList }: List) {
   return (
-    <Link to='/'>
+    <Link to={`/${productList._id}`}>
       <div className='flex flex-col pb-3 bg-white shadow hover:cursor-pointer hover:translate-y-[-0.0625rem] transition-transform duration-100'>
         <div className='w-full pt-[100%] relative'>
           <img
