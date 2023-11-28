@@ -15,7 +15,6 @@ function App() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
   const ProtectedRoute = () => (isAuthenticated ? <Outlet /> : <Navigate to='/login' />)
   const RejectedRoute = () => (!isAuthenticated ? <Outlet /> : <Navigate to='/' />)
-
   return (
     <>
       <Routes>
@@ -57,7 +56,7 @@ function App() {
           }
         />
         <Route
-          path=':id'
+          path=':nameId'
           element={
             <MainLayout>
               <ProductDetail />

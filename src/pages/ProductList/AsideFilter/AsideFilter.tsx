@@ -67,7 +67,6 @@ function AsideFilter({ queryConfig, categories }: Props) {
       pathname: '/',
       search: queryString.stringify({ ...queryConfig, price_min: data.price_min, price_max: data.price_max })
     })
-    console.log(data)
   }
 
   const resetFilterHandler = () => {

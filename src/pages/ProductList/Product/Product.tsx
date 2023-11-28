@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom'
 import { Product as ProductType } from '../../../types/product.type'
 import ProductStar from '../../../components/ProductStar'
+import { generateUrlName } from '../../../utils/utils'
 
 interface List {
   productList: ProductType
 }
 
 function Product({ productList }: List) {
+  const nameUrl = generateUrlName({ name: productList.name, id: productList._id })
   return (
-    <Link to={`/${productList._id}`}>
+    <Link to={`/${nameUrl}`}>
       <div className='flex flex-col pb-3 bg-white shadow hover:cursor-pointer hover:translate-y-[-0.0625rem] transition-transform duration-100'>
         <div className='w-full pt-[100%] relative'>
           <img

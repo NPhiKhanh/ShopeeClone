@@ -1,12 +1,36 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Popover from '../Popover'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useSelector, useDispatch } from 'react-redux'
+import { useForm } from 'react-hook-form'
 import { RootState } from '../../redux/store'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import noProduct from '../../assets/images/no_product.png'
 import { logoutAccount } from '../../api/auth.api'
 import { setIsAuthenticated, setProfile } from '../../redux/authSlice'
+import useQueryConfig from '../../hooks/useQueryConfig'
+import queryString from 'query-string'
+import { omit } from 'lodash'
+import { getPurchases } from '../../api/cart.api'
+
+type Schema = yup.InferType<typeof schema>
+
+const schema = yup.object({
+  search: yup.string().trim().required('')
+})
+const MAX_SHOWCARTLIST = 5
 
 function Header() {
+  const queryConfig = useQueryConfig()
+  const navigate = useNavigate()
+  const { register, handleSubmit } = useForm<Schema>({
+    defaultValues: {
+      search: ''
+    },
+    resolver: yupResolver(schema)
+  })
+
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
   const profile = useSelector((state: RootState) => state.auth.profile)
   const dispatch = useDispatch()
@@ -17,8 +41,26 @@ function Header() {
       dispatch(setProfile(null))
     }
   })
+
   const logoutHandler = () => {
     logoutMutation.mutate()
+  }
+
+  const { data: cartListData } = useQuery({
+    queryKey: ['cartList'],
+    queryFn: () => getPurchases({ status: -1 })
+  })
+
+  const cartList = cartListData?.data.data
+
+  const submitHandler = (data: Schema) => {
+    const config = queryConfig.order
+      ? omit({ ...queryConfig, search: data.search }, ['order', 'sort_by'])
+      : { ...queryConfig, search: data.search }
+    navigate({
+      pathname: '/',
+      search: queryString.stringify(config)
+    })
   }
   return (
     <div className='pb-5 pt-2 bg-[linear-gradient(-180deg,#f53d2d,#f63)]'>
@@ -167,13 +209,13 @@ function Header() {
             </svg>
           </Link>
           <div className='col-span-9 mr-12'>
-            <form>
+            <form onSubmit={handleSubmit(submitHandler)}>
               <div className='bg-white rounded-sm p-1 flex'>
                 <input
                   type='text'
                   className='w-full px-2 py-2 outline-none rounded-sm text-black'
-                  name='Search'
                   placeholder='ShopeeLive giảm đến 50%'
+                  {...register('search')}
                 />
                 <button className='bg-orange flex-shrink-0 rounded-sm py-2 px-6 hover:opacity-90'>
                   <svg viewBox='0 0 19 19' className='w-4 h-4 fill-white'>
@@ -194,65 +236,67 @@ function Header() {
               </div>
             </form>
           </div>
-          <div className='col-span-1 justify-self-start'>
+          <div className='col-span-1 justify-self-start mb-1'>
             <Popover
               placement='bottom-end'
               renderPopover={
                 <div className='bg-white p-3 border rounded-sm shadow max-w-[400px] text-sm '>
-                  <div className='text-gray-400 capitalize'>Sản phẩm mới thêm</div>
-                  <div className='mt-5'>
-                    <div className='mt-4 flex'>
-                      <div className='w-8 h-8 mr-2 flex-shrink-0'>
-                        <img
-                          src='https://down-vn.img.susercontent.com/file/https://down-vn.img.susercontent.com/file/sg-11134201-22120-73dt3m9aj6kvad_tn'
-                          alt='product'
-                          className='w-full h-full rounded-sm object-cover'
-                        />
+                  {cartList ? (
+                    <>
+                      <div className='text-gray-400 capitalize'>Sản phẩm mới thêm</div>
+                      <div className='mt-5'>
+                        {cartList?.slice(0, MAX_SHOWCARTLIST).map((item) => (
+                          <div className='mt-4 flex' key={item._id}>
+                            <div className='w-9 h-9 mr-2 flex-shrink-0'>
+                              <img
+                                src={item.product.image}
+                                alt={item.product.name}
+                                className='w-full h-full rounded-sm object-cover'
+                              />
+                            </div>
+                            <div className='truncate'>{item.product.name}</div>
+                            <div className='text-orange'>
+                              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                                item.price
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className='truncate'>Thùng Đựng Gạo Nắp Lật Thông Minh Homepower HDG-T</div>
-                      <div className='text-orange'>
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(245000)}
+                      <div className='flex mt-6 items-center justify-between'>
+                        <div className='capitalize text-xs text-gray-500'>
+                          {cartList.length > MAX_SHOWCARTLIST ? cartList?.length - MAX_SHOWCARTLIST : ''} Thêm hàng vào
+                          giỏ
+                        </div>
+                        <button className='capitalize bg-orange hover:bg-opacity-90 px-4 py-2 rounded-sm text-white'>
+                          Xem giỏ hàng
+                        </button>
                       </div>
+                    </>
+                  ) : (
+                    <div className='w-[350px] h-[250px] flex items-center justify-center'>
+                      <img src={noProduct} alt='no_product' className='w-20 h-20 rounded-sm object-cover' />
+                      <div className='mt-3 capitalize'>Chưa có sản phẩm</div>
                     </div>
-                    <div className='mt-4 flex'>
-                      <div className='w-8 h-8 mr-2 flex-shrink-0'>
-                        <img
-                          src='https://down-vn.img.susercontent.com/file/sg-11134201-22120-73dt3m9aj6kvad_tn'
-                          alt='product'
-                          className='w-full h-full rounded-sm object-cover'
-                        />
-                      </div>
-                      <div className='truncate'>Thùng Đựng Gạo Nắp Lật Thông Minh Homepower HDG-T</div>
-                      <div className='text-orange'>
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(245000)}
-                      </div>
-                    </div>
-                    <div className='mt-4 flex'>
-                      <div className='w-8 h-8 mr-2 flex-shrink-0'>
-                        <img
-                          src='https://down-vn.img.susercontent.com/file/sg-11134201-22120-73dt3m9aj6kvad_tn'
-                          alt='product'
-                          className='w-full h-full rounded-sm object-cover'
-                        />
-                      </div>
-                      <div className='truncate'>Thùng Đựng Gạo Nắp Lật Thông Minh Homepower HDG-T</div>
-                      <div className='text-orange'>
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(245000)}
-                      </div>
-                    </div>
-                  </div>
-                  <div className='flex mt-6 items-center justify-between'>
-                    <div className='capitalize text-xs text-gray-500'>Thêm hàng vào giỏ</div>
-                    <button className='capitalize bg-orange hover:bg-opacity-90 px-4 py-2 rounded-sm text-white'>
-                      Xem giỏ hàng
-                    </button>
-                  </div>
+                  )}
                 </div>
               }
             >
-              <Link to='/'>
-                <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512' className='w-7 h-7 fill-white'>
-                  <path d='M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z' />
+              <Link to='/' className='relative'>
+                <div className='absolute left-4 bottom-5 w-5 h-5 leading-5 border border-orange rounded-xl text-orange text-center bg-white z-10'>
+                  {cartList?.length}
+                </div>
+                <svg viewBox='0 0 26.6 25.6' className='w-7 h-7 fill-white stroke-white'>
+                  <polyline
+                    fill='none'
+                    points='2 1.7 5.5 1.7 9.6 18.3 21.2 18.3 24.6 6.1 7 6.1'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeMiterlimit='10'
+                    strokeWidth='2.5'
+                  ></polyline>
+                  <circle cx='10.7' cy='23' r='2.2' stroke='none'></circle>
+                  <circle cx='19.7' cy='23' r='2.2' stroke='none'></circle>
                 </svg>
               </Link>
             </Popover>

@@ -1,20 +1,53 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
-import { getProductDetail } from '../../api/product.api'
+import { getAllProducts, getProductDetail } from '../../api/product.api'
 import ProductStar from '../../components/ProductStar'
-import InputNumber from '../../components/InputNumber'
 import DOMPurify from 'dompurify'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Product } from '../../types/product.type'
+import { Product as ProductType, ProductListConfig } from '../../types/product.type'
+import { getIdFromUrl } from '../../utils/utils'
+import Product from '../ProductList/Product'
+import InputQuantity from '../../components/InputQuantity'
+import { addToCart } from '../../api/cart.api'
+import { queryClient } from '../../main'
+import { toast } from 'react-toastify'
 
 function ProductDetail() {
-  const { id } = useParams()
+  const { nameId } = useParams()
+  const id = getIdFromUrl(nameId as string)
+
+  const [cartCount, setCartCount] = useState(1)
+
   const { data: productDetailData } = useQuery({
     queryKey: ['product', id],
     queryFn: () => getProductDetail(id as string)
   })
   const productDetail = productDetailData?.data.data
 
+  const queryConfig: ProductListConfig = { limit: '20', page: '1', category: productDetail?.category._id }
+  const { data: productRelative } = useQuery({
+    queryKey: ['productRelative', queryConfig],
+    queryFn: () => getAllProducts(queryConfig),
+    staleTime: 3 * 60 * 1000,
+    enabled: Boolean(productDetail)
+  })
+
+  const addToCartMutation = useMutation({
+    mutationFn: (body: { product_id: string; buy_count: number }) => addToCart(body)
+  })
+  const addToCartHanlder = () => {
+    addToCartMutation.mutate(
+      { product_id: productDetail?._id as string, buy_count: cartCount },
+      {
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({ queryKey: ['cartList'] })
+          toast.success(data.data.message, { autoClose: 2000 })
+        }
+      }
+    )
+  }
+
+  // IMG hanlder
   const [indexImg, setIndexImg] = useState([0, 5])
   const [currentImg, setCurrentImg] = useState('')
   const imgRef = useRef<HTMLImageElement>(null)
@@ -30,7 +63,7 @@ function ProductDetail() {
   }, [productDetail])
 
   const nextSliderHandler = () => {
-    if (indexImg[1] < (productDetail as Product).images.length) {
+    if (indexImg[1] < (productDetail as ProductType).images.length) {
       setIndexImg((prev) => [prev[0] + 1, prev[1] + 1])
     }
   }
@@ -54,6 +87,12 @@ function ProductDetail() {
     img.style.left = left + 'px'
     img.style.maxWidth = 'unset'
   }
+  // End IMG hanlder
+
+  const cartCountHandler = (value: number) => {
+    setCartCount(value)
+  }
+
   if (!productDetail) return null
 
   return (
@@ -163,41 +202,20 @@ function ProductDetail() {
             </div>
             <div className='mt-8 flex items-center px-5'>
               <div className='capitalize text-gray-500 text-sm'>Số lượng</div>
-              <div className='ml-10 flex items-center'>
-                <button className='flex h-8 w-8 items-center justify-center rounded-l-sm border border-gray-300 text-gray-600'>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    strokeWidth={1.5}
-                    stroke='currentColor'
-                    className='w-3 h-3'
-                  >
-                    <path strokeLinecap='round' strokeLinejoin='round' d='M19.5 12h-15' />
-                  </svg>
-                </button>
-                <InputNumber
-                  value={1}
-                  classNameError='hidden'
-                  classNameInput='h-8 w-12 border-t border-b border-gray-300 p-1 text-center outline-none'
-                />
-                <button className='flex h-8 w-8 items-center justify-center rounded-r-sm border border-gray-300 text-gray-600'>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    strokeWidth={1.5}
-                    stroke='currentColor'
-                    className='w-3 h-3'
-                  >
-                    <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
-                  </svg>
-                </button>
-              </div>
+              <InputQuantity
+                onChangeNumber={cartCountHandler}
+                onIncrease={cartCountHandler}
+                onDecrease={cartCountHandler}
+                value={cartCount}
+                max={productDetail.quantity}
+              />
               <div className='ml-6 text-sm text-gray-500'>{productDetail.quantity} sản phẩm có sẵn</div>
             </div>
             <div className='mt-8 px-5 flex items-center'>
-              <button className='h-12 flex items-center justify-center rounded-sm border bg-orange/10 border-orange px-5 capitalize text-orange shadow-sm hover:bg-white'>
+              <button
+                className='h-12 flex items-center justify-center rounded-sm border bg-orange/10 border-orange px-5 capitalize text-orange shadow-sm hover:bg-white'
+                onClick={addToCartHanlder}
+              >
                 <svg
                   enableBackground='new 0 0 15 15'
                   viewBox='0 0 15 15'
@@ -255,6 +273,18 @@ function ProductDetail() {
             }}
           />
         </div>
+      </div>
+      <div className='max-w-7xl mx-auto px-8 mt-10'>
+        <div className='font-medium text-gray-500 uppercase'>có thể bạn cũng thích</div>
+        {productRelative && (
+          <div className='mt-7 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2'>
+            {productRelative.data.data.products.map((product) => (
+              <div className='col-span-1' key={product._id}>
+                <Product productList={product} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
