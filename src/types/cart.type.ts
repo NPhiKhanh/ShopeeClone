@@ -14,3 +14,8 @@ export interface Cart {
   createdAt: string
   updatedAt: string
 }
+
+export interface NewCartList extends Cart {
+  disabled: boolean
+  checked: boolean
+}

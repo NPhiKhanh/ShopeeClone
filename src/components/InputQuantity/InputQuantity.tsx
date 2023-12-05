@@ -5,9 +5,20 @@ interface Props extends InputNumberProps {
   onIncrease?: (value: number) => void
   onDecrease?: (value: number) => void
   onChangeNumber?: (value: number) => void
+  onFocusOut?: (value: number) => void
+  classNameWrapper?: string
 }
 
-function InputQuantity({ max, onIncrease, onDecrease, onChangeNumber, value, ...rest }: Props) {
+function InputQuantity({
+  max,
+  classNameWrapper = 'ml-10 flex items-center',
+  onIncrease,
+  onDecrease,
+  onChangeNumber,
+  onFocusOut,
+  value,
+  ...rest
+}: Props) {
   const handlerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let valueInput = Number(e.currentTarget.value)
     if (max != undefined && valueInput > max) {
@@ -16,6 +27,10 @@ function InputQuantity({ max, onIncrease, onDecrease, onChangeNumber, value, ...
       valueInput = 1
     }
     onChangeNumber && onChangeNumber(valueInput)
+  }
+
+  const focusOutHanlder = (e: React.FocusEvent<HTMLInputElement, Element>) => {
+    onFocusOut && onFocusOut(Number(e.currentTarget.value))
   }
 
   const increaseHandler = () => {
@@ -34,7 +49,7 @@ function InputQuantity({ max, onIncrease, onDecrease, onChangeNumber, value, ...
   }
 
   return (
-    <div className='ml-10 flex items-center'>
+    <div className={classNameWrapper}>
       <button
         className='flex h-8 w-8 items-center justify-center rounded-l-sm border border-gray-300 text-gray-600'
         onClick={decreaseHanlder}
@@ -55,6 +70,7 @@ function InputQuantity({ max, onIncrease, onDecrease, onChangeNumber, value, ...
         classNameError='hidden'
         classNameInput='h-8 w-12 border-t border-b border-gray-300 p-1 text-center outline-none'
         onChange={handlerChange}
+        onBlur={focusOutHanlder}
         {...rest}
       />
       <button

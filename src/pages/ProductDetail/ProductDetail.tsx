@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { getAllProducts, getProductDetail } from '../../api/product.api'
 import ProductStar from '../../components/ProductStar'
 import DOMPurify from 'dompurify'
@@ -13,6 +13,8 @@ import { queryClient } from '../../main'
 import { toast } from 'react-toastify'
 
 function ProductDetail() {
+  const navigate = useNavigate()
+
   const { nameId } = useParams()
   const id = getIdFromUrl(nameId as string)
 
@@ -42,6 +44,17 @@ function ProductDetail() {
         onSuccess: (data) => {
           queryClient.invalidateQueries({ queryKey: ['cartList'] })
           toast.success(data.data.message, { autoClose: 2000 })
+        }
+      }
+    )
+  }
+
+  const buyProduct = () => {
+    addToCartMutation.mutate(
+      { product_id: productDetail?._id as string, buy_count: cartCount },
+      {
+        onSuccess: (data) => {
+          navigate({ pathname: '/cart' }, { state: { purchaseId: data.data.data._id } })
         }
       }
     )
@@ -257,7 +270,10 @@ function ProductDetail() {
                 </svg>
                 Thêm vào giỏ hàng
               </button>
-              <button className='h-12 ml-4 px-5 min-w-[5rem] flex items-center justify-center rounded-sm shadow-sm outline-none hover:bg-opacity-90 bg-orange text-white capitalize'>
+              <button
+                onClick={buyProduct}
+                className='h-12 ml-4 px-5 min-w-[5rem] flex items-center justify-center rounded-sm shadow-sm outline-none hover:bg-opacity-90 bg-orange text-white capitalize'
+              >
                 Mua ngay
               </button>
             </div>

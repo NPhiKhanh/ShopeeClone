@@ -10,6 +10,8 @@ import Profile from './pages/Profile'
 import { useSelector } from 'react-redux'
 import { RootState } from './redux/store'
 import ProductDetail from './pages/ProductDetail'
+import Cart from './pages/Cart'
+import CartLayout from './layouts/CartLayout/CartLayout'
 
 function App() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
@@ -43,6 +45,14 @@ function App() {
               <MainLayout>
                 <Profile />
               </MainLayout>
+            }
+          />
+          <Route
+            path='/cart'
+            element={
+              <CartLayout>
+                <Cart />
+              </CartLayout>
             }
           />
         </Route>

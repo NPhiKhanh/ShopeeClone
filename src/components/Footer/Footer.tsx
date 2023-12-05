@@ -1,7 +1,7 @@
 function Footer() {
   return (
-    <footer className='py-5 bg-neutral-100'>
-      <div className='max-w-7xl mx-auto px-8'>
+    <footer className='py-5 bg-neutral-100 border-t-4 border-solid border-orange'>
+      <div className='max-w-7xl mx-auto px-8 mt-10'>
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-5'>
           <div className='col-span-1'>
             <div className='text-gray-600 text-sm'>© 2023 Shopee. Tất cả các quyền được bảo lưu.</div>
