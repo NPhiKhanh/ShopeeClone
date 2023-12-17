@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getAllProducts, getProductDetail } from '../../api/product.api'
 import ProductStar from '../../components/ProductStar'
@@ -9,11 +9,11 @@ import { getIdFromUrl } from '../../utils/utils'
 import Product from '../ProductList/Product'
 import InputQuantity from '../../components/InputQuantity'
 import { addToCart } from '../../api/cart.api'
-import { queryClient } from '../../main'
 import { toast } from 'react-toastify'
 
 function ProductDetail() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const { nameId } = useParams()
   const id = getIdFromUrl(nameId as string)

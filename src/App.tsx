@@ -6,12 +6,15 @@ import Register from './pages/Register'
 import Login from './pages/Login'
 import RegisterLayout from './layouts/RegisterLayout'
 import MainLayout from './layouts/MainLayout/MainLayout'
-import Profile from './pages/Profile'
+import Profile from './pages/User/pages/Profile'
 import { useSelector } from 'react-redux'
 import { RootState } from './redux/store'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import CartLayout from './layouts/CartLayout/CartLayout'
+import UserLayout from './pages/User/layouts/UserLayout'
+import ChangePassword from './pages/User/pages/ChangePassword'
+import HistoryPurchase from './pages/User/pages/HistoryPurchase'
 
 function App() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
@@ -38,15 +41,8 @@ function App() {
             }
           />
         </Route>
+
         <Route path='/' element={<ProtectedRoute />}>
-          <Route
-            path='/profile'
-            element={
-              <MainLayout>
-                <Profile />
-              </MainLayout>
-            }
-          />
           <Route
             path='/cart'
             element={
@@ -55,7 +51,20 @@ function App() {
               </CartLayout>
             }
           />
+          <Route
+            path='/user'
+            element={
+              <MainLayout>
+                <UserLayout />
+              </MainLayout>
+            }
+          >
+            <Route path='/user/profile' element={<Profile />} />
+            <Route path='/user/password' element={<ChangePassword />} />
+            <Route path='/user/historyPurchase' element={<HistoryPurchase />} />
+          </Route>
         </Route>
+
         <Route
           path='/'
           index={true}
@@ -65,6 +74,7 @@ function App() {
             </MainLayout>
           }
         />
+
         <Route
           path=':nameId'
           element={

@@ -1,10 +1,17 @@
-import axios from 'axios'
+import axios, { AxiosError, HttpStatusCode } from 'axios'
 import { toast } from 'react-toastify'
 import { clear, getAccessToken, saveAccessToken, saveProfile } from './auth'
+import { useDispatch } from 'react-redux'
+import { setIsAuthenticated, setProfile } from '../redux/authSlice'
+import config from '../constants/config'
 
 export const axiosPrivate = axios.create({
-  baseURL: 'https://api-ecom.duthanhduoc.com',
-  headers: { 'Content-Type': 'application/json' }
+  baseURL: config.baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+    expires: 10,
+    expires_refresh_token: 60 * 60
+  }
 })
 
 axiosPrivate.interceptors.request.use(
@@ -33,9 +40,19 @@ axiosPrivate.interceptors.response.use(
     }
     return response
   },
-  function (error) {
-    const message = error.response?.data.data?.email || error.response?.data.message || error.message
-    toast.error(message)
+  function (error: AxiosError) {
+    const dispatch = useDispatch()
+    if (error.response?.status !== HttpStatusCode.UnprocessableEntity) {
+      const data: any | undefined = error.response?.data
+      const message = data.message || error.message
+      toast.error(message)
+    }
+    if (error.response?.status === HttpStatusCode.Unauthorized) {
+      clear()
+      dispatch(setIsAuthenticated(false))
+      dispatch(setProfile(''))
+    }
+
     return Promise.reject(error)
   }
 )

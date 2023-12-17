@@ -2,15 +2,16 @@ import { Link } from 'react-router-dom'
 import { RootState } from '../../redux/store'
 import Popover from '../Popover'
 import { useDispatch, useSelector } from 'react-redux'
-import { useMutation } from '@tanstack/react-query'
-import { queryClient } from '../../main'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { logoutAccount } from '../../api/auth.api'
 import { setIsAuthenticated, setProfile } from '../../redux/authSlice'
+import { getAvatarURL } from '../../utils/utils'
 
 function NavHeader() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
   const profile = useSelector((state: RootState) => state.auth.profile)
 
+  const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const logoutMutation = useMutation({
     mutationFn: () => logoutAccount(),
@@ -125,7 +126,7 @@ function NavHeader() {
           <Popover
             renderPopover={
               <div className='bg-white p-2 border rounded-sm shadow min-w-[180px] mr-16'>
-                <Link to='/profile' className='block hover:text-cyan-500 cursor-pointer text-sm mb-5'>
+                <Link to='/user/profile' className='block hover:text-cyan-500 cursor-pointer text-sm mb-5'>
                   Tài khoản của tôi
                 </Link>
                 <Link to='/' className='block hover:text-cyan-500 cursor-pointer text-sm mt-5'>
@@ -139,7 +140,7 @@ function NavHeader() {
           >
             <div className='w-6 h-6 mr-2 flex-shrink-0'>
               <img
-                src='https://down-vn.img.susercontent.com/file/9da56dccee4d32d3f56fe02556418a29_tn'
+                src={getAvatarURL(profile?.avatar)}
                 alt='avatar'
                 className='w-full h-full rounded-full object-cover'
               />
